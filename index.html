@@ -1,47 +1,27 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Ghana Districts Map – Interactive | Victor Morton-Bruce</title>
-  <meta name="description" content="Interactive Ghana districts map with region filter, labels and search. Built by Victor Morton-Bruce.">
-  <meta name="robots" content="index,follow">
-  <meta property="og:title" content="Ghana Districts Map – Interactive" />
-  <meta property="og:description" content="Region filter, district search & labels." />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Title and Description -->
+  <title>Ghana Districts Map – Interactive</title>
+  <meta name="description" content="Interactive Ghana districts map with region filter, district search, and labels." />
+
+  <!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->
   <meta property="og:type" content="website" />
-  <meta property="og:url" content=" https://airban-engr.github.io/ghana_districts-demo/" />
+  <meta property="og:title" content="Ghana Districts Map – Interactive" />
+  <meta property="og:description" content="Region filter, district search, and labels." />
+  <meta property="og:url" content="https://airban-engr.github.io/ghana_districts-demo/" />
   <meta property="og:image" content="https://airban-engr.github.io/ghana_districts-demo/preview.png?v=3" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
+
+  <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
-  <style>
-    html,body,#map{height:100%;margin:0}
-    .ui{position:absolute;top:10px;left:10px;z-index:1000;background:rgba(255,255,255,.98);padding:10px 12px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.18);font:14px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;width:320px;max-width:calc(100% - 20px)}
-    .row{display:flex;gap:8px;margin-bottom:8px}
-    label{font-size:12px;color:#333;display:block;margin-bottom:4px}
-    input[type="text"],select{flex:1;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:14px;outline:none}
-    button{padding:8px 10px;border:1px solid #cbd5e1;background:#0b73d9;color:#fff;border-radius:6px;cursor:pointer}
-    button.secondary{background:#fff;color:#0b73d9}
-    .legend{position:absolute;bottom:10px;right:10px;z-index:1000;background:rgba(255,255,255,.95);padding:8px 10px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.15);font:12px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;max-height:40vh;overflow:auto;width:220px}
-    .entry{display:flex;align-items:center;gap:8px;margin:4px 0}
-    .sw{width:14px;height:14px;border:1px solid #999;border-radius:2px}
-    .footer{position:absolute;bottom:10px;left:10px;z-index:1000;background:rgba(255,255,255,.95);padding:6px 8px;border-radius:6px;font:12px system-ui}
-    .hint{font-size:12px;color:#475569}
-    .lbl{pointer-events:none;font:11px/1.1 system-ui;color:#0f172a;text-shadow:0 0 2px #fff,0 0 3px #fff}
-    .cta{position:absolute;right:10px;top:10px;z-index:1100;display:flex;flex-direction:column;gap:8px}
-    .cta a{display:inline-block;text-decoration:none;font:14px system-ui;padding:10px 12px;border-radius:6px;border:1px solid #cbd5e1}
-    .cta .email{background:#0b73d9;color:#fff}
-    .cta .whatsapp{background:#25D366;color:#fff}
-  </style>
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXX"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-XXXXXXX');
-    function track(e, params){ try{ gtag('event', e, params||{}); }catch(err){} }
-  </script>
+  <meta name="twitter:title" content="Ghana Districts Map – Interactive" />
+  <meta name="twitter:description" content="Region filter, district search, and labels." />
+  <meta name="twitter:image" content="https://airban-engr.github.io/ghana_districts-demo/preview.png?v=3" />
 </head>
 <body>
 <div id="map"></div>
