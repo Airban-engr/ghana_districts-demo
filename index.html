@@ -1,130 +1,203 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
 
-  <!-- Title and Description -->
+  <!-- Title & Description -->
   <title>Ghana Districts Map – Interactive</title>
   <meta name="description" content="Interactive Ghana districts map with region filter, district search, and labels." />
 
-  <!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->
+  <!-- Open Graph (Facebook/WhatsApp/LinkedIn) -->
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Ghana Districts Map – Interactive" />
   <meta property="og:description" content="Region filter, district search, and labels." />
   <meta property="og:url" content="https://airban-engr.github.io/ghana_districts-demo/" />
+  <!-- Use jsDelivr CDN for image to avoid crawler hiccups; keep preview.png in repo root -->
   <meta property="og:image" content="https://cdn.jsdelivr.net/gh/airban-engr/ghana_districts-demo@main/preview.png?v=4" />
-<meta property="og:image:secure_url" content="https://cdn.jsdelivr.net/gh/airban-engr/ghana_districts-demo@main/preview.png?v=4" />
-<meta property="og:image:width" content="1200" />
-<meta property="og:image:height" content="630" />
-  <!-- Twitter Card -->
+  <meta property="og:image:secure_url" content="https://cdn.jsdelivr.net/gh/airban-engr/ghana_districts-demo@main/preview.png?v=4" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+
+  <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Ghana Districts Map – Interactive" />
   <meta name="twitter:description" content="Region filter, district search, and labels." />
-  <meta name="twitter:image" content="https://airban-engr.github.io/ghana_districts-demo/preview.png?v=3" />
+  <meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/airban-engr/ghana_districts-demo@main/preview.png?v=4" />
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+
+  <style>
+    html, body, #map { height: 100%; margin: 0; }
+    .ui {
+      position:absolute; top:10px; left:10px; z-index:1000;
+      background:rgba(255,255,255,.98); padding:10px 12px; border-radius:8px;
+      box-shadow:0 2px 10px rgba(0,0,0,.18); font:14px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      width:320px; max-width:calc(100% - 20px);
+    }
+    .row{display:flex; gap:8px; margin-bottom:8px;}
+    label{font-size:12px; color:#333; display:block; margin-bottom:4px;}
+    input[type="text"], select{flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:14px; outline:none;}
+    button{padding:8px 10px; border:1px solid #cbd5e1; background:#0b73d9; color:#fff; border-radius:6px; cursor:pointer;}
+    button.secondary{background:#fff; color:#0b73d9;}
+    .legend{
+      position:absolute; bottom:10px; right:10px; z-index:1000;
+      background:rgba(255,255,255,.95); padding:8px 10px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,.15);
+      font:12px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; max-height:40vh; overflow:auto; width:220px;
+    }
+    .entry{display:flex; align-items:center; gap:8px; margin:4px 0;}
+    .sw{width:14px; height:14px; border:1px solid #999; border-radius:2px;}
+    .lbl{pointer-events:none; font:11px/1.1 system-ui; color:#0f172a; text-shadow:0 0 2px #fff, 0 0 3px #fff;}
+    .cta{position:absolute;right:10px;top:10px;z-index:1100;display:flex;flex-direction:column;gap:8px}
+    .cta a{display:inline-block;text-decoration:none;font:14px system-ui;padding:10px 12px;border-radius:6px;border:1px solid #cbd5e1}
+    .cta .email{background:#0b73d9;color:#fff}
+    .cta .whatsapp{background:#25D366;color:#fff}
+  </style>
 </head>
 <body>
-<div id="map"></div>
+  <div id="map"></div>
 
-<div class="cta">
-  <a class="email" href="mailto:airbanengineers@gmail.com?subject=Interactive Map Request&body=Hi Victor,%0D%0A%0D%0AI’d like a map like your Ghana demo for [organization] in [region]." target="_blank" rel="noreferrer">Get a map like this →</a>
-  <a class="whatsapp" href="https://wa.me/2330207372140?text=Hi%20Victor,%20I%20want%20a%20map%20like%20your%20Ghana%20demo%20for%20[org]" target="_blank" rel="noreferrer">WhatsApp me →</a>
-</div>
-
-<div class="ui">
-  <div class="row">
-    <div style="flex:1">
-      <label for="regionSel">Filter by Region</label>
-      <select id="regionSel"><option value="">All regions</option></select>
-    </div>
+  <!-- CTAs (edit your contact details if you want) -->
+  <div class="cta">
+    <a class="email" href="mailto:__YOUR_EMAIL__?subject=Interactive Map Request&body=Hi Victor,%0D%0A%0D%0AI’d like a map like your Ghana demo for [organization] in [region]." target="_blank" rel="noreferrer">Get a map like this →</a>
+    <a class="whatsapp" href="https://wa.me/__YOUR_WHATSAPP__?text=Hi%20Victor,%20I%20want%20a%20map%20like%20your%20Ghana%20demo%20for%20[org]" target="_blank" rel="noreferrer">WhatsApp me →</a>
   </div>
-  <div class="row">
-    <div style="flex:1">
-      <label for="districtInp">Search District</label>
-      <input id="districtInp" type="text" list="districtList" placeholder="Start typing...">
-      <datalist id="districtList"></datalist>
+
+  <div class="ui">
+    <div class="row">
+      <div style="flex:1">
+        <label for="regionSel">Filter by Region</label>
+        <select id="regionSel"><option value="">All regions</option></select>
+      </div>
     </div>
-    <div><label>&nbsp;</label><button id="goBtn">Go</button></div>
-    <div><label>&nbsp;</label><button id="clearBtn" class="secondary">Clear</button></div>
+    <div class="row">
+      <div style="flex:1">
+        <label for="districtInp">Search District</label>
+        <input id="districtInp" type="text" list="districtList" placeholder="Start typing...">
+        <datalist id="districtList"></datalist>
+      </div>
+      <div><label>&nbsp;</label><button id="goBtn">Go</button></div>
+      <div><label>&nbsp;</label><button id="clearBtn" class="secondary">Clear</button></div>
+    </div>
+    <div style="font-size:12px;color:#475569">Data file must be at <code>/data/ghana_districts_simplified.geojson</code></div>
   </div>
-  <div class="hint">Drop <code>ghana_districts_simplified.geojson</code> into <code>data/</code>. Open via a local server.</div>
-</div>
 
-<div class="legend" id="legend"><b>Regions</b><div id="legendItems"></div></div>
-<div class="footer">Leaflet • Turf.js for centroids</div>
+  <div class="legend" id="legend"><b>Regions</b><div id="legendItems"></div></div>
 
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
-<script>
-  const map = L.map('map', {minZoom:6}).setView([7.9,-1.0],7);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19, attribution:'&copy; OpenStreetMap'}).addTo(map);
+  <!-- Leaflet & Turf JS (must be after the DOM exists) -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
 
-  const PALETTE=['#1f77b4','#ff7f0e','#2ca02c','#d62728','#9467bd','#8c564b','#e377c2','#7f7f7f','#bcbd22','#17becf','#3182bd','#6baed6'];
-  function prop(o,keys){for(const k of keys){if(o&&(k in o))return o[k];}}
-  function regionOf(p){return prop(p,['REGION','Region','REG','region'])||'Unknown'}
-  function districtOf(p){return prop(p,['DISTRICT','DIST_NAME','District','district','DIST'])||'District'}
+  <script>
+    // ----- Map base -----
+    const map = L.map('map', { minZoom: 6 }).setView([7.9, -1.0], 7);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19, attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
 
-  let allFeatures=[], geoLayer, labelLayer, COLOR_MAP={};
-  const regionSel=document.getElementById('regionSel'), districtInp=document.getElementById('districtInp');
-  const goBtn=document.getElementById('goBtn'), clearBtn=document.getElementById('clearBtn'), legend=document.getElementById('legendItems');
+    // ----- UI refs -----
+    const regionSel = document.getElementById('regionSel');
+    const districtInp = document.getElementById('districtInp');
+    const goBtn = document.getElementById('goBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const legend = document.getElementById('legendItems');
 
-  function buildRegionMap(features){
-    const regions=Array.from(new Set(features.map(f=>regionOf(f.properties)))).sort();
-    const colorByRegion={}; regions.forEach((r,i)=>colorByRegion[r]=PALETTE[i%PALETTE.length]);
-    regions.forEach(r=>{const o=document.createElement('option'); o.value=r; o.textContent=r; regionSel.appendChild(o)});
-    legend.innerHTML=''; regions.forEach(r=>{const div=document.createElement('div'); div.className='entry';
-      const sw=document.createElement('span'); sw.className='sw'; sw.style.background=colorByRegion[r];
-      const lbl=document.createElement('span'); lbl.textContent=r; div.appendChild(sw); div.appendChild(lbl); legend.appendChild(div);});
-    return colorByRegion;
-  }
-  function styleFor(f){const r=regionOf(f.properties); const c=COLOR_MAP[r]||'#2a4b8d'; return {color:c,weight:1,fillColor:c,fillOpacity:0.18};}
+    // ----- Helpers -----
+    const PALETTE = ['#1f77b4','#ff7f0e','#2ca02c','#d62728','#9467bd','#8c564b','#e377c2','#7f7f7f','#bcbd22','#17becf','#3182bd','#6baed6'];
+    function prop(o, keys){ for(const k of keys){ if(o && (k in o)) return o[k]; } }
+    function regionOf(p){ return prop(p, ['REGION','Region','REG','region']) || 'Unknown'; }
+    function districtOf(p){ return prop(p, ['DISTRICT','DIST_NAME','District','district','DIST']) || 'District'; }
 
-  function populateDatalist(features){
-    const dl=document.getElementById('districtList'); dl.innerHTML='';
-    Array.from(new Set(features.map(f=>districtOf(f.properties)))).sort().forEach(n=>{const o=document.createElement('option'); o.value=n; dl.appendChild(o)});
-  }
+    let allFeatures = [], geoLayer, labelLayer, COLOR_MAP = {};
 
-  function refreshLayer(features){
-    if(geoLayer) geoLayer.remove(); if(labelLayer){labelLayer.clearLayers(); labelLayer.remove();}
-    geoLayer=L.geoJSON(features,{style:styleFor,onEachFeature:(f,l)=>{
-      const d=districtOf(f.properties), r=regionOf(f.properties);
-      l.bindPopup(`<b>${d}</b><br>${r}`);
-      l.on('mouseover',e=>e.target.setStyle({weight:2,fillOpacity:0.28}));
-      l.on('mouseout',e=>geoLayer.resetStyle(e.target));
-    }}).addTo(map);
-    labelLayer=L.layerGroup().addTo(map);
-    features.forEach(f=>{const d=districtOf(f.properties); if(!d) return;
-      try{const c=turf.centroid(f).geometry.coordinates; const m=L.marker([c[1],c[0]],{interactive:false,opacity:0.0});
-          m.bindTooltip(d,{permanent:true,direction:'center',className:'lbl'}); labelLayer.addLayer(m);}catch(e){} });
-    map.on('zoomend',()=>{const z=map.getZoom(); labelLayer.eachLayer(m=>m.getTooltip().setOpacity(z>=8?1:0));});
-    try{map.fitBounds(geoLayer.getBounds(),{padding:[20,20]});}catch(e){}
-  }
+    function buildRegionMap(features){
+      const regions = Array.from(new Set(features.map(f => regionOf(f.properties)))).sort();
+      const colorByRegion = {}; regions.forEach((r,i)=> colorByRegion[r] = PALETTE[i % PALETTE.length]);
+      // dropdown
+      regions.forEach(r=>{ const opt=document.createElement('option'); opt.value=r; opt.textContent=r; regionSel.appendChild(opt); });
+      // legend
+      legend.innerHTML=''; regions.forEach(r=>{ const div=document.createElement('div'); div.className='entry';
+        const sw=document.createElement('span'); sw.className='sw'; sw.style.background=colorByRegion[r];
+        const lbl=document.createElement('span'); lbl.textContent=r; div.appendChild(sw); div.appendChild(lbl); legend.appendChild(div); });
+      return colorByRegion;
+    }
+    function styleFor(f){ const r=regionOf(f.properties); const c=COLOR_MAP[r]||'#2a4b8d'; return { color:c, weight:1, fillColor:c, fillOpacity:0.18 }; }
 
-  function featuresByRegion(region){ if(!region) return allFeatures; return allFeatures.filter(f=>regionOf(f.properties)===region); }
+    function populateDatalist(features){
+      const dl=document.getElementById('districtList'); dl.innerHTML='';
+      Array.from(new Set(features.map(f=>districtOf(f.properties)))).sort().forEach(n=>{
+        const o=document.createElement('option'); o.value=n; dl.appendChild(o);
+      });
+    }
 
-  regionSel.addEventListener('change',()=>{const subset=featuresByRegion(regionSel.value); populateDatalist(subset); refreshLayer(subset); track('region_change',{region:regionSel.value});});
-  clearBtn.addEventListener('click',()=>{regionSel.value=''; districtInp.value=''; populateDatalist(allFeatures); refreshLayer(allFeatures); track('clear_filters');});
-  goBtn.addEventListener('click',()=>{
-    const subset=featuresByRegion(regionSel.value);
-    const q=(districtInp.value||'').trim().toLowerCase(); if(!q){alert('Type a district name.'); return;}
-    let hit=subset.find(f=>districtOf(f.properties).toLowerCase()===q);
-    if(!hit) hit=subset.find(f=>districtOf(f.properties).toLowerCase().includes(q));
-    if(!hit){alert('No matching district found.'); return;}
-    refreshLayer(subset);
-    geoLayer.eachLayer(l=>{if(l.feature===hit){map.fitBounds(l.getBounds(),{maxZoom:11,padding:[40,40]}); l.openPopup();}});
-    track('district_search',{district:districtInp.value, region:regionSel.value});
-  });
+    function refreshLayer(features){
+      if(geoLayer) geoLayer.remove(); if(labelLayer){ labelLayer.clearLayers(); labelLayer.remove(); }
+      geoLayer = L.geoJSON(features, {
+        style: styleFor,
+        onEachFeature: (f,l)=>{
+          const d=districtOf(f.properties), r=regionOf(f.properties);
+          l.bindPopup(`<b>${d}</b><br>${r}`);
+          l.on('mouseover',e=>e.target.setStyle({weight:2, fillOpacity:0.28}));
+          l.on('mouseout',e=>geoLayer.resetStyle(e.target));
+        }
+      }).addTo(map);
 
-  // URL state (?region=Ashanti&d=Kumasi)
-  const params=new URLSearchParams(location.search);
-  const initialRegion=params.get('region')||''; const initialDistrict=params.get('d')||'';
+      labelLayer = L.layerGroup().addTo(map);
+      features.forEach(f=>{
+        const d=districtOf(f.properties); if(!d) return;
+        try{
+          const c=turf.centroid(f).geometry.coordinates;
+          const m=L.marker([c[1],c[0]],{interactive:false,opacity:0.0});
+          m.bindTooltip(d,{permanent:true,direction:'center',className:'lbl'}); labelLayer.addLayer(m);
+        }catch(e){}
+      });
+      map.on('zoomend', ()=>{ const z=map.getZoom(); labelLayer.eachLayer(m=>m.getTooltip().setOpacity(z>=8 ? 1 : 0)); });
+      try{ map.fitBounds(geoLayer.getBounds(), {padding:[20,20]}); }catch(e){}
+    }
 
-  fetch('data/ghana_districts_simplified.geojson').then(r=>r.json()).then(data=>{
-    allFeatures=(data.type==='FeatureCollection'?data.features:data.features)||[];
-    COLOR_MAP=buildRegionMap(allFeatures); populateDatalist(allFeatures); refreshLayer(allFeatures);
-    if(initialRegion){ regionSel.value=initialRegion; regionSel.dispatchEvent(new Event('change')); }
-    if(initialDistrict){ districtInp.value=initialDistrict; goBtn.click(); }
-  }).catch(err=>{console.error(err); alert('Could not find data/ghana_districts_simplified.geojson. Place your file in data/ and reload.');});
-</script>
+    function featuresByRegion(region){ if(!region) return allFeatures; return allFeatures.filter(f => regionOf(f.properties) === region); }
+
+    regionSel.addEventListener('change', ()=>{ const subset = featuresByRegion(regionSel.value); populateDatalist(subset); refreshLayer(subset); });
+    clearBtn.addEventListener('click', ()=>{ regionSel.value=''; districtInp.value=''; populateDatalist(allFeatures); refreshLayer(allFeatures); });
+    goBtn.addEventListener('click', ()=>{
+      const subset = featuresByRegion(regionSel.value);
+      const q = (districtInp.value||'').trim().toLowerCase(); if(!q){ alert('Type a district name.'); return; }
+      let hit = subset.find(f => districtOf(f.properties).toLowerCase() === q);
+      if(!hit) hit = subset.find(f => districtOf(f.properties).toLowerCase().includes(q));
+      if(!hit){ alert('No matching district found.'); return; }
+      refreshLayer(subset);
+      geoLayer.eachLayer(l => { if(l.feature === hit){ map.fitBounds(l.getBounds(), {maxZoom:11, padding:[40,40]}); l.openPopup(); } });
+    });
+
+    // ----- Robust data loader: try local path, then CDN fallback -----
+    const LOCAL_URL = 'data/ghana_districts_simplified.geojson';
+    const CDN_URL   = 'https://cdn.jsdelivr.net/gh/airban-engr/ghana_districts-demo@main/data/ghana_districts_simplified.geojson';
+
+    function loadData(url){
+      return fetch(url).then(r=> {
+        if(!r.ok) throw new Error('HTTP ' + r.status + ' for ' + url);
+        return r.json();
+      });
+    }
+
+    loadData(LOCAL_URL)
+      .catch(err => {
+        console.warn('Local data not found or blocked, trying CDN fallback...', err);
+        return loadData(CDN_URL);
+      })
+      .then(data => {
+        const feats = (data && (data.features || (data.type==='FeatureCollection' && data.features))) ? data.features : [];
+        if(!feats.length) throw new Error('No features found in GeoJSON');
+        allFeatures = feats;
+        COLOR_MAP = buildRegionMap(allFeatures);
+        populateDatalist(allFeatures);
+        refreshLayer(allFeatures);
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Could not load districts data. Ensure the file exists at /data/ghana_districts_simplified.geojson (or the CDN fallback path).');
+      });
+  </script>
 </body>
 </html>
